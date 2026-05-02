@@ -1,11 +1,11 @@
-﻿namespace GSVWriter.Model
+﻿using System;
+using System.IO;
+
+namespace GSVWriter.Model
 {
 
     public sealed class UESaveGameHeader : ISerializeable
     {
-        // Const
-        public const UEVer VERSION = UEVer.UE_54;
-
         // Serializeable
         const int UE_SAVEGAME_FILE_TYPE_TAG = 0x53415647; // "SAVG"
         const int SaveGameFileVersion = 3;
@@ -16,12 +16,12 @@
         readonly string SaveGameClassName = ""; // /Game/Mods/GSVQueue/SG_QueueItem.SG_QueueItem_C
 
 
-        public UESaveGameHeader(string saveGameClassName)
+        public UESaveGameHeader(string saveGameClassName, FPackageFileVersion packageVersion, FEngineVersionBase engineVersion)
         {
             if (string.IsNullOrEmpty(saveGameClassName))
                 throw new ArgumentException($"{nameof(SaveGameClassName)} cannot be null!");
-            PackageFileUEVersion = new FPackageFileVersion(522, 1012);
-            SavedEngineVersion = new FEngineVersionBase(5, 4, 3, 0, "UE5");
+            PackageFileUEVersion = packageVersion;
+            SavedEngineVersion = engineVersion;
             SaveGameClassName = saveGameClassName;
         }
 
@@ -41,12 +41,6 @@
                     4 + 4 + PackageFileUEVersion.GetSizeInBytes() + SavedEngineVersion.GetSizeInBytes() + 4 + 4 + SaveGameClassName.FLengthFull();
     }
 
-    public enum UEVer
-    {
-        None = 0,
-        UE_54 = 1,
-        Unknown = 2
-    }
 
     public readonly struct FPackageFileVersion : ISerializeable
     {

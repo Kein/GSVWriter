@@ -1,4 +1,7 @@
-﻿namespace GSVWriter.Model
+﻿using System;
+using System.IO;
+
+namespace GSVWriter.Model
 {
     internal interface ISerializeable
     {

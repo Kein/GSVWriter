@@ -1,7 +1,21 @@
-﻿using GSVWriter.Model;
+﻿using System;
+using System.IO;
+using System.Collections.Generic    ;
+using GSVWriter.Model;
 
 namespace GSVWriter
 {
+    public enum EPropertyTagFlags : byte
+    {
+        None = 0x00,
+        HasArrayIndex = 0x01,
+        HasPropertyGuid = 0x02,
+        HasPropertyExtensions = 0x04,
+        HasBinaryOrNativeSerialize = 0x08,
+        BoolTrue = 0x10,
+        SkippedSerialize = 0x20
+    }
+
     public sealed class GSVPayload
     {
         // Semi-const
@@ -10,7 +24,8 @@ namespace GSVWriter
         const string PropVariant = "ArrayProperty";
         const int PropVariantTag = 1;
         const string PropType = "StrProperty";
-        const int PropTypeTag = 0;
+        const int UnkData = 0;
+        const EPropertyTagFlags Tag = EPropertyTagFlags.None;
 
         // Props
         int FixedSize => PropName.FLengthFull() + PropVariant.FLengthFull() + 4 + PropType.FLengthFull() + 4;
@@ -21,7 +36,7 @@ namespace GSVWriter
         {
             if (string.IsNullOrEmpty(filePath) || !System.IO.Path.IsPathFullyQualified(filePath))
                 throw new ArgumentException($"File path cannot be empty or invalid!");
-            this.header = new UESaveGameHeader(saveGameClassName);
+            this.header = new UESaveGameHeader(saveGameClassName, new FPackageFileVersion(522, 1017), new FEngineVersionBase(5, 6, 0, 0, "UE5"));
             FilePath = filePath;
         }
 
@@ -43,10 +58,10 @@ namespace GSVWriter
                     writer.WriteFString(PropVariant);
                     writer.Write(PropVariantTag);
                     writer.WriteFString(PropType);
-                    writer.Write(PropTypeTag);
+                    writer.Write(UnkData); // ??
                     //--
                     writer.Write(payloadSize);
-                    writer.Write((byte)0); // padding?
+                    writer.Write((byte)Tag);
                     writer.Write(data.Count);
                     foreach (var str in data)
                         writer.WriteFString(str);
